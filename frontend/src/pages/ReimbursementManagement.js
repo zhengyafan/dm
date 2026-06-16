@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, DatePicker, InputNumber, message, Card, Image } from 'antd';
+import { Table, Button, Modal, Form, Input, DatePicker, InputNumber, message, Image, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined, PictureOutlined } from '@ant-design/icons';
 import { reimbursementApi } from '../api';
 import dayjs from 'dayjs';
+import { MetricCard, MoneyText, PageShell, RecordCount, tablePagination, Toolbar } from '../components/ui';
 
 const { RangePicker } = DatePicker;
 
@@ -206,9 +207,9 @@ function ReimbursementManagement() {
     { title: '报销人', dataIndex: 'person', key: 'person' },
     { title: '报销时间', dataIndex: 'reimburse_date', key: 'reimburse_date' },
     { title: '报销物品', dataIndex: 'item', key: 'item' },
-    { title: '单价', dataIndex: 'unit_price', key: 'unit_price', render: (text) => `¥${text}` },
+    { title: '单价', dataIndex: 'unit_price', key: 'unit_price', render: (text) => <MoneyText value={text} /> },
     { title: '数量', dataIndex: 'quantity', key: 'quantity' },
-    { title: '报销金额', dataIndex: 'total_amount', key: 'total_amount', render: (text) => `¥${text}` },
+    { title: '报销金额', dataIndex: 'total_amount', key: 'total_amount', render: (text) => <MoneyText value={text} strong tone="cost" /> },
     {
       title: '截图',
       key: 'screenshot',
@@ -230,10 +231,12 @@ function ReimbursementManagement() {
     {
       title: '操作',
       key: 'action',
+      width: 112,
+      fixed: 'right',
       render: (_, record) => (
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
+        <div className="table-actions">
+          <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button size="small" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
         </div>
       )
     }
@@ -247,9 +250,10 @@ function ReimbursementManagement() {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', gap: 12 }}>
+    <PageShell title="报销管理" description="管理采购、物料、截图凭证和筛选周期内报销总额。">
+      <Toolbar
+        filters={(
+          <>
           <RangePicker
             value={dateRange}
             onChange={(dates) => setDateRange(dates || [])}
@@ -262,8 +266,11 @@ function ReimbursementManagement() {
             onChange={(e) => setSearchPerson(e.target.value)}
             style={{ width: 150 }}
           />
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+          </>
+        )}
+        meta={<RecordCount count={data.length} selected={selectedRows.length} />}
+        actions={(
+          <>
           <Button icon={<DownloadOutlined />} onClick={handleDownloadTemplate}>下载导入模板</Button>
           <Button icon={<UploadOutlined />} onClick={() => document.getElementById('import-btn').click()}>导入Excel</Button>
           <input
@@ -280,23 +287,29 @@ function ReimbursementManagement() {
           <Button icon={<DownloadOutlined />} onClick={handleExport}>导出Excel</Button>
           <Button icon={<DeleteOutlined />} danger onClick={handleBatchDelete}>批量删除</Button>
           <Button icon={<PlusOutlined />} type="primary" onClick={handleAdd}>新增</Button>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
-      <Card style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <span style={{ fontSize: 18, fontWeight: 'bold', color: '#f5222d' }}>
-            当前筛选结果总报销金额: ¥{totalAmount.toLocaleString()}
-          </span>
-        </div>
-      </Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+        <Col xs={24} md={8}>
+          <MetricCard label="当前筛选总报销" value={<MoneyText value={totalAmount} strong tone="cost" />} tone="red" />
+        </Col>
+        <Col xs={24} md={8}>
+          <MetricCard label="报销记录" value={data.length} suffix=" 条" tone="forest" />
+        </Col>
+      </Row>
 
       <Table
+        className="app-table"
         dataSource={data}
         columns={columns}
         rowKey="id"
         loading={loading}
         rowSelection={rowSelection}
+        size="middle"
+        scroll={{ x: 1180 }}
+        pagination={tablePagination('报销记录')}
       />
 
       <Modal
@@ -371,7 +384,7 @@ function ReimbursementManagement() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 

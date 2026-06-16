@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Tooltip } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { scriptApi } from '../api';
+import { MoneyText, PageShell, RecordCount, tablePagination, Toolbar, TypeTag } from '../components/ui';
 
 const { Option } = Select;
 
@@ -154,18 +155,20 @@ function ScriptManagement() {
       title: '剧本属性',
       dataIndex: 'attribute',
       key: 'attribute',
-      render: (text) => (text === 'box' ? '盒装' : '城限')
+      render: (text) => <TypeTag value={text} />
     },
     { title: '剧本类型', dataIndex: 'genre', key: 'genre' },
     { title: '剧本人数', dataIndex: 'player_num', key: 'player_num' },
-    { title: '剧本价格', dataIndex: 'price', key: 'price', render: (text) => `¥${text}` },
+    { title: '剧本价格', dataIndex: 'price', key: 'price', render: (text) => <MoneyText value={text} /> },
     {
       title: '操作',
       key: 'action',
+      width: 112,
+      fixed: 'right',
       render: (_, record) => (
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
+        <div className="table-actions">
+          <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button size="small" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
         </div>
       )
     }
@@ -179,9 +182,10 @@ function ScriptManagement() {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', gap: 12 }}>
+    <PageShell title="本单管理" description="维护剧本资料、价格、人数和盒装/城限属性。">
+      <Toolbar
+        filters={(
+          <>
           <Input.Search
             placeholder="按名称搜索"
             value={searchName}
@@ -204,8 +208,11 @@ function ScriptManagement() {
             onChange={(e) => setSearchGenre(e.target.value)}
             style={{ width: 150 }}
           />
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+          </>
+        )}
+        meta={<RecordCount count={data.length} selected={selectedRows.length} />}
+        actions={(
+          <>
           <Tooltip title="下载导入模板（仅包含一条示例数据）">
             <Button icon={<FileExcelOutlined />} onClick={handleDownloadTemplate}>下载模板</Button>
           </Tooltip>
@@ -224,15 +231,20 @@ function ScriptManagement() {
           <Button icon={<DownloadOutlined />} onClick={handleExport}>导出Excel</Button>
           <Button icon={<DeleteOutlined />} danger onClick={handleBatchDelete}>批量删除</Button>
           <Button icon={<PlusOutlined />} type="primary" onClick={handleAdd}>新增</Button>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
       <Table
+        className="app-table"
         dataSource={data}
         columns={columns}
         rowKey="id"
         loading={loading}
         rowSelection={rowSelection}
+        size="middle"
+        scroll={{ x: 920 }}
+        pagination={tablePagination('剧本')}
       />
 
       <Modal
@@ -262,7 +274,7 @@ function ScriptManagement() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 

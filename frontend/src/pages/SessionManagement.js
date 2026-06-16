@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Select, DatePicker, Input, InputNumber, mes
 import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { sessionApi, dmApi, scriptApi } from '../api';
 import dayjs from 'dayjs';
+import { MoneyText, PageShell, RecordCount, tablePagination, Toolbar, TypeTag } from '../components/ui';
 
 const { RangePicker } = DatePicker;
 
@@ -202,19 +203,21 @@ function SessionManagement() {
       title: '剧本属性',
       dataIndex: 'attribute',
       key: 'attribute',
-      render: (text) => (text === 'box' ? '盒装' : '城限')
+      render: (text) => <TypeTag value={text} />
     },
-    { title: '开本费', dataIndex: 'props_fee', key: 'props_fee', render: (text) => `¥${text}` },
+    { title: '开本费', dataIndex: 'props_fee', key: 'props_fee', render: (text) => <MoneyText value={text} /> },
     { title: '好评数量', dataIndex: 'praise_count', key: 'praise_count' },
     { title: 'DM姓名', dataIndex: 'Dm', key: 'dm_name', render: (dm) => dm?.name || '' },
     { title: '备注', dataIndex: 'remark', key: 'remark' },
     {
       title: '操作',
       key: 'action',
+      width: 112,
+      fixed: 'right',
       render: (_, record) => (
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
+        <div className="table-actions">
+          <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button size="small" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
         </div>
       )
     }
@@ -227,15 +230,11 @@ function SessionManagement() {
     selectedRowKeys: selectedRows
   };
 
-  const getScriptAttribute = (scriptId) => {
-    const script = scripts.find(s => s.id === scriptId);
-    return script ? (script.attribute === 'box' ? '盒装' : '城限') : '';
-  };
-
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', gap: 12 }}>
+    <PageShell title="开本记录" description="记录每场开本、DM、剧本、好评和开本费。">
+      <Toolbar
+        filters={(
+          <>
           <RangePicker
             value={dateRange}
             onChange={(dates) => setDateRange(dates || [])}
@@ -259,8 +258,11 @@ function SessionManagement() {
             onChange={(e) => setSearchScriptName(e.target.value)}
             style={{ width: 150 }}
           />
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+          </>
+        )}
+        meta={<RecordCount count={data.length} selected={selectedRows.length} />}
+        actions={(
+          <>
           <Tooltip title="下载导入模板（剧本名称和DM姓名需在系统中已存在）">
             <Button icon={<FileExcelOutlined />} onClick={handleDownloadTemplate}>下载模板</Button>
           </Tooltip>
@@ -279,15 +281,20 @@ function SessionManagement() {
           <Button icon={<DownloadOutlined />} onClick={handleExport}>导出Excel</Button>
           <Button icon={<DeleteOutlined />} danger onClick={handleBatchDelete}>批量删除</Button>
           <Button icon={<PlusOutlined />} type="primary" onClick={handleAdd}>新增</Button>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
       <Table
+        className="app-table"
         dataSource={data}
         columns={columns}
         rowKey="id"
         loading={loading}
         rowSelection={rowSelection}
+        size="middle"
+        scroll={{ x: 1180 }}
+        pagination={tablePagination('开本记录')}
       />
 
       <Modal
@@ -328,7 +335,7 @@ function SessionManagement() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, Select, InputNumber, DatePicker, message, Card, Row, Col, Statistic } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, InputNumber, DatePicker, message, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import { cashflowApi } from '../api';
 import dayjs from 'dayjs';
+import { MetricCard, MoneyText, PageShell, RecordCount, tablePagination, Toolbar } from '../components/ui';
 
 function CashflowManagement() {
   const [data, setData] = useState([]);
@@ -188,29 +189,29 @@ function CashflowManagement() {
   const columns = [
     { title: '剧本名称', dataIndex: 'script_name', key: 'script_name' },
     { title: '开本日期', dataIndex: 'session_date', key: 'session_date', render: (text) => text ? new Date(text).toLocaleDateString('zh-CN') : '' },
-    { title: '美团金额', dataIndex: 'meituan_amount', key: 'meituan_amount', render: (text) => `¥${text}` },
+    { title: '美团金额', dataIndex: 'meituan_amount', key: 'meituan_amount', render: (text) => <MoneyText value={text} /> },
     { title: '美团抽成', dataIndex: 'meituan_rate', key: 'meituan_rate', render: (text) => `${(text * 100).toFixed(0)}%` },
-    { title: '谜圈金额', dataIndex: 'miquan_amount', key: 'miquan_amount', render: (text) => `¥${text}` },
+    { title: '谜圈金额', dataIndex: 'miquan_amount', key: 'miquan_amount', render: (text) => <MoneyText value={text} /> },
     { title: '谜圈抽成', dataIndex: 'miquan_rate', key: 'miquan_rate', render: (text) => `${(text * 100).toFixed(0)}%` },
-    { title: '微信金额', dataIndex: 'wechat_amount', key: 'wechat_amount', render: (text) => `¥${text}` },
-    { title: '总收款', key: 'total', render: (_, record) => `¥${calculateTotal(record).toFixed(2)}` },
+    { title: '微信金额', dataIndex: 'wechat_amount', key: 'wechat_amount', render: (text) => <MoneyText value={text} /> },
+    { title: '总收款', key: 'total', render: (_, record) => <MoneyText value={calculateTotal(record)} strong /> },
     { 
       title: '实际收入', 
       key: 'actual_income', 
       render: (_, record) => (
-        <span style={{ fontWeight: 'bold', color: '#52c41a' }}>
-          ¥{calculateActualIncome(record).toFixed(2)}
-        </span>
+        <MoneyText value={calculateActualIncome(record)} strong tone="income" />
       )
     },
     { title: '备注', dataIndex: 'remark', key: 'remark' },
     {
       title: '操作',
       key: 'action',
+      width: 112,
+      fixed: 'right',
       render: (_, record) => (
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
+        <div className="table-actions">
+          <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button size="small" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
         </div>
       )
     }
@@ -224,9 +225,10 @@ function CashflowManagement() {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', gap: 12 }}>
+    <PageShell title="流水管理" description="统计收款渠道、平台抽成和实际收入。">
+      <Toolbar
+        filters={(
+          <>
           <Input.Search
             placeholder="剧本名称"
             value={searchScriptName}
@@ -255,8 +257,11 @@ function CashflowManagement() {
               <Select.Option key={month} value={month}>{month}月</Select.Option>
             ))}
           </Select>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+          </>
+        )}
+        meta={<RecordCount count={data.length} selected={selectedRows.length} />}
+        actions={(
+          <>
           <Button icon={<DownloadOutlined />} onClick={handleDownloadTemplate}>下载导入模板</Button>
           <Button icon={<UploadOutlined />} onClick={() => document.getElementById('import-btn').click()}>导入Excel</Button>
           <input
@@ -273,49 +278,32 @@ function CashflowManagement() {
           <Button icon={<DownloadOutlined />} onClick={handleExport}>导出Excel</Button>
           <Button icon={<DeleteOutlined />} danger onClick={handleBatchDelete}>批量删除</Button>
           <Button icon={<PlusOutlined />} type="primary" onClick={handleAdd}>新增</Button>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="总收款金额"
-              value={summary.totalAmount}
-              precision={2}
-              prefix="¥"
-              valueStyle={{ color: '#3f8600' }}
-            />
-          </Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+        <Col xs={24} md={8}>
+          <MetricCard label="总收款金额" value={<MoneyText value={summary.totalAmount} strong />} tone="forest" />
         </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="实际收入金额"
-              value={summary.actualIncome}
-              precision={2}
-              prefix="¥"
-              valueStyle={{ color: '#cf1322' }}
-            />
-          </Card>
+        <Col xs={24} md={8}>
+          <MetricCard label="实际收入金额" value={<MoneyText value={summary.actualIncome} strong tone="income" />} tone="teal" />
         </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="记录数量"
-              value={summary.count}
-              suffix="条"
-            />
-          </Card>
+        <Col xs={24} md={8}>
+          <MetricCard label="记录数量" value={summary.count || 0} suffix=" 条" tone="amber" />
         </Col>
       </Row>
 
       <Table
+        className="app-table"
         dataSource={data}
         columns={columns}
         rowKey="id"
         loading={loading}
         rowSelection={rowSelection}
+        size="middle"
+        scroll={{ x: 1300 }}
+        pagination={tablePagination('流水')}
       />
 
       <Modal
@@ -351,7 +339,7 @@ function CashflowManagement() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 

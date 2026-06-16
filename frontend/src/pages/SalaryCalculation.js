@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, DatePicker, InputNumber, Input, message, Card, Collapse, Tabs, Popconfirm, Upload } from 'antd';
+import { Table, Button, DatePicker, InputNumber, Input, message, Card, Collapse, Tabs, Popconfirm, Upload } from 'antd';
 import { CalculatorOutlined, SaveOutlined, UndoOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { salaryApi } from '../api';
 import dayjs from 'dayjs';
+import { MoneyText, PageShell, tablePagination, Toolbar, TypeTag } from '../components/ui';
 
 const { RangePicker } = DatePicker;
 
@@ -15,6 +16,8 @@ function SalaryCalculation() {
   const [searchDmName, setSearchDmName] = useState('');
   const [searchDateRange, setSearchDateRange] = useState([]);
   const [filterDmName, setFilterDmName] = useState('');
+  const resultTotal = results.reduce((sum, item) => sum + (Number(item.total_salary) || 0), 0);
+  const resultCars = results.reduce((sum, item) => sum + (Number(item.total_cars) || 0), 0);
 
   const calculate = async () => {
     setLoading(true);
@@ -37,8 +40,8 @@ function SalaryCalculation() {
     setResults(prev => prev.map(item => {
       if (item.dm_id === dmId) {
         const newItem = { ...item, [field]: parseFloat(value) || 0 };
-        newItem.total_salary = newItem.base_salary + newItem.bonus_salary + 
-                              newItem.city_extra + newItem.props_total + newItem.milestone_reward;
+        newItem.total_salary = newItem.base_salary + newItem.bonus_salary +
+                              newItem.city_extra + newItem.props_total + newItem.milestone_reward + (newItem.blood_salary || 0);
         return newItem;
       }
       return item;
@@ -159,10 +162,7 @@ function SalaryCalculation() {
 
   const columns = [
     { title: 'DM姓名', dataIndex: 'dm_name', key: 'dm_name' },
-    { title: 'DM类型', dataIndex: 'dm_type', key: 'dm_type', render: (text) => {
-      const types = { parttime: '打野', step: '阶梯', fulltime: '全职' };
-      return types[text] || text;
-    }},
+    { title: 'DM类型', dataIndex: 'dm_type', key: 'dm_type', render: (text) => <TypeTag value={text} /> },
     { title: '普通车次', dataIndex: 'normal_cars', key: 'normal_cars' },
     { title: '城限车次', dataIndex: 'city_cars', key: 'city_cars' },
     { title: '血染车次', dataIndex: 'blood_cars', key: 'blood_cars' },
@@ -243,7 +243,7 @@ function SalaryCalculation() {
       title: '总工资', 
       dataIndex: 'total_salary', 
       key: 'total_salary',
-      render: (text) => <span style={{ fontWeight: 'bold', color: '#1890ff' }}>¥{text.toFixed(2)}</span>
+      render: (text) => <MoneyText value={text} strong tone="teal" />
     },
     { 
       title: '备注', 
@@ -260,9 +260,10 @@ function SalaryCalculation() {
   ];
 
   return (
-    <div>
-      <Card title="工资查询条件">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+    <PageShell title="工资计算" description="按周期计算未结算开本工资，可人工调整后保存结算。">
+      <Toolbar
+        filters={(
+          <>
           <RangePicker
             value={dateRange}
             onChange={(dates) => dates && setDateRange(dates)}
@@ -276,9 +277,13 @@ function SalaryCalculation() {
             onChange={(e) => setFilterDmName(e.target.value)}
             style={{ width: 200 }}
           />
-          <Button 
-            type="primary" 
-            icon={<CalculatorOutlined />} 
+          </>
+        )}
+        actions={(
+          <>
+          <Button
+            type="primary"
+            icon={<CalculatorOutlined />}
             onClick={calculate}
             loading={loading}
           >
@@ -303,10 +308,19 @@ function SalaryCalculation() {
               保存结算
             </Button>
           )}
-        </div>
-      </Card>
+          </>
+        )}
+      />
 
-      <Tabs 
+      {showResults && (
+        <div className="salary-total-bar">
+          <span className="salary-total-pill">本次 DM：{results.length} 人</span>
+          <span className="salary-total-pill">本次车次：{resultCars} 场</span>
+          <span className="salary-total-pill">预计工资：<MoneyText value={resultTotal} strong tone="teal" /></span>
+        </div>
+      )}
+
+      <Tabs
         defaultActiveKey="1" 
         style={{ marginTop: 16 }}
         items={[
@@ -322,10 +336,13 @@ function SalaryCalculation() {
                 ) : (
                   <>
                     <Table
+                      className="app-table"
                       dataSource={results}
                       columns={columns}
                       rowKey="dm_id"
                       pagination={false}
+                      size="small"
+                      scroll={{ x: 1420 }}
                     />
                     <Collapse 
                       style={{ marginTop: 20 }}
@@ -338,6 +355,7 @@ function SalaryCalculation() {
                               <div style={{ marginBottom: 20 }}>
                                 <h4 style={{ marginBottom: 10, color: '#1890ff' }}>阶梯工资计算详情</h4>
                                 <Table
+                                  className="app-table"
                                   dataSource={item.ladder_details}
                                   columns={[
                                     { title: '累计车次', dataIndex: 'car_index', key: 'car_index' },
@@ -356,13 +374,14 @@ function SalaryCalculation() {
                               </div>
                             )}
                             <Table
+                              className="app-table"
                               dataSource={item.sessions}
                               columns={[
                                 { title: '剧本名称', dataIndex: 'script_name', key: 'script_name' },
                                 { title: '开本日期', dataIndex: 'session_date', key: 'session_date' },
                                 { title: '开本时间', dataIndex: 'session_time', key: 'session_time' },
-                                { title: '属性', dataIndex: 'attribute', key: 'attribute', render: (t) => t === 'box' ? '盒装' : '城限' },
-                                { title: '开本费', dataIndex: 'props_fee', key: 'props_fee' }
+                                { title: '属性', dataIndex: 'attribute', key: 'attribute', render: (t) => <TypeTag value={t} /> },
+                                { title: '开本费', dataIndex: 'props_fee', key: 'props_fee', render: (v) => <MoneyText value={v} /> }
                               ]}
                               rowKey="id"
                               pagination={false}
@@ -386,7 +405,7 @@ function SalaryCalculation() {
             key: '2',
             label: '已结算记录',
             children: (
-              <Card 
+              <Card
                 title="已结算工资记录"
                 extra={
                   <div style={{ display: 'flex', gap: 8 }}>
@@ -425,6 +444,7 @@ function SalaryCalculation() {
                   </div>
                 ) : (
                   <Table
+                    className="app-table"
                     dataSource={settlements}
                     columns={[
                       { title: 'DM姓名', dataIndex: 'Dm', key: 'dm_name', render: (dm) => dm?.name || '' },
@@ -436,7 +456,7 @@ function SalaryCalculation() {
                       { title: '血染工资', dataIndex: 'blood_salary', key: 'blood_salary' },
                       { title: '开本费总计', dataIndex: 'props_total', key: 'props_total' },
                       { title: '里程碑奖励', dataIndex: 'milestone_reward', key: 'milestone_reward' },
-                      { title: '总工资', dataIndex: 'total_salary', key: 'total_salary', render: (text) => <span style={{ fontWeight: 'bold', color: '#1890ff' }}>¥{text.toFixed(2)}</span> },
+                      { title: '总工资', dataIndex: 'total_salary', key: 'total_salary', render: (text) => <MoneyText value={text} strong tone="teal" /> },
                       { title: '备注', dataIndex: 'remark', key: 'remark' },
                       { title: '结算时间', dataIndex: 'createdAt', key: 'createdAt', render: (text) => dayjs(text).format('YYYY-MM-DD HH:mm') },
                       { 
@@ -462,7 +482,9 @@ function SalaryCalculation() {
                       }
                     ]}
                     rowKey="id"
-                    pagination={{ pageSize: 10 }}
+                    size="small"
+                    scroll={{ x: 1360 }}
+                    pagination={tablePagination('结算记录')}
                   />
                 )}
               </Card>
@@ -470,7 +492,7 @@ function SalaryCalculation() {
           }
         ]}
       />
-    </div>
+    </PageShell>
   );
 }
 

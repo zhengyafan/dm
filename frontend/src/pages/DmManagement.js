@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Upload, message } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import { dmApi } from '../api';
-import * as XLSX from 'xlsx';
+import { PageShell, RecordCount, tablePagination, Toolbar, TypeTag } from '../components/ui';
 
 const { Option } = Select;
 
@@ -125,18 +125,17 @@ function DmManagement() {
       title: 'DM类型',
       dataIndex: 'type',
       key: 'type',
-      render: (text) => {
-        const types = { parttime: '打野', step: '阶梯', fulltime: '全职' };
-        return types[text] || text;
-      }
+      render: (text) => <TypeTag value={text} />
     },
     {
       title: '操作',
       key: 'action',
+      width: 112,
+      fixed: 'right',
       render: (_, record) => (
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
+        <div className="table-actions">
+          <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button size="small" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
         </div>
       )
     }
@@ -150,15 +149,19 @@ function DmManagement() {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Input.Search
-          placeholder="按姓名搜索"
-          value={searchName}
-          onChange={(e) => setSearchName(e.target.value)}
-          style={{ width: 200 }}
-        />
-        <div style={{ display: 'flex', gap: 8 }}>
+    <PageShell title="DM 管理" description="维护主持人资料、类型和联系方式。">
+      <Toolbar
+        filters={(
+          <Input.Search
+            placeholder="按姓名搜索"
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            style={{ width: 220 }}
+          />
+        )}
+        meta={<RecordCount count={data.length} selected={selectedRows.length} />}
+        actions={(
+          <>
           <Button icon={<UploadOutlined />} onClick={() => document.getElementById('import-btn').click()}>导入Excel</Button>
           <input
             id="import-btn"
@@ -174,15 +177,20 @@ function DmManagement() {
           <Button icon={<DownloadOutlined />} onClick={handleExport}>导出Excel</Button>
           <Button icon={<DeleteOutlined />} danger onClick={handleBatchDelete}>批量删除</Button>
           <Button icon={<PlusOutlined />} type="primary" onClick={handleAdd}>新增</Button>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
       <Table
+        className="app-table"
         dataSource={data}
         columns={columns}
         rowKey="id"
         loading={loading}
         rowSelection={rowSelection}
+        size="middle"
+        scroll={{ x: 720 }}
+        pagination={tablePagination('DM')}
       />
 
       <Modal
@@ -207,7 +215,7 @@ function DmManagement() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 

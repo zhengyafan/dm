@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Button, Form, Input, Layout, Menu, message, Modal, Space } from 'antd';
-import { 
-  HomeOutlined, 
-  UserOutlined, 
+import {
+  HomeOutlined,
+  UserOutlined,
   BookOutlined, 
   CalendarOutlined, 
   CalculatorOutlined, 
@@ -10,7 +10,8 @@ import {
   BarChartOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  LockOutlined
 } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import moment from 'moment';
@@ -68,20 +69,14 @@ function LayoutComponent({ children }) {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed} theme="light">
-        <div className="logo" style={{ 
-          height: 64, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          fontSize: collapsed ? 16 : 20,
-          fontWeight: 'bold',
-          color: '#1890ff'
-        }}>
-          {collapsed ? 'DM' : '剧本杀DM管理'}
+    <Layout className="app-root-layout">
+      <Sider trigger={null} collapsible collapsed={collapsed} className="app-sider">
+        <div className="app-logo">
+          <span className="app-logo-mark">{collapsed ? 'D' : 'DM'}</span>
+          {!collapsed && <span>剧本杀管理</span>}
         </div>
         <Menu
+          className="app-menu"
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
@@ -89,14 +84,7 @@ function LayoutComponent({ children }) {
         />
       </Sider>
       <Layout>
-        <Header style={{ 
-          padding: 0, 
-          background: '#fff', 
-          borderBottom: '1px solid #f0f0f0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
+        <Header className="app-header">
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -107,11 +95,12 @@ function LayoutComponent({ children }) {
               height: 64,
             }}
           />
-          <Space style={{ paddingRight: 24 }}>
+          <Space className="app-header-user">
             <span style={{ color: '#888', fontSize: 14 }}>{currentTime}</span>
             <span style={{ color: '#555', fontSize: 14 }}>{user?.display_name || user?.username}</span>
             <Button
               type="text"
+              icon={<LockOutlined />}
               onClick={() => setPasswordModalOpen(true)}
             >
               修改密码
@@ -128,14 +117,7 @@ function LayoutComponent({ children }) {
             </Button>
           </Space>
         </Header>
-        <Content
-          style={{
-            margin: '24px 16px',
-            padding: 24,
-            minHeight: 280,
-            background: '#f5f5f5'
-          }}
-        >
+        <Content className="app-content">
           {children}
         </Content>
       </Layout>

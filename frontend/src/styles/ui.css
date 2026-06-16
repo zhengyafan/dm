@@ -1,0 +1,380 @@
+:root {
+  --ink: #10231f;
+  --forest: #1f5f4b;
+  --teal: #1f8a70;
+  --amber: #d9822b;
+  --red: #b54646;
+  --paper: #f6f7f2;
+  --surface: #ffffff;
+  --line: #dfe6df;
+  --muted: #66736f;
+  --shadow: 0 10px 28px rgba(16, 35, 31, 0.08);
+}
+
+body {
+  background: var(--paper);
+}
+
+.app-root-layout {
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(31, 138, 112, 0.05), transparent 32%),
+    var(--paper);
+}
+
+.app-sider {
+  background: var(--ink) !important;
+  box-shadow: 8px 0 24px rgba(16, 35, 31, 0.14);
+}
+
+.app-logo {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: #f8fbf7;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.app-logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--teal);
+  color: #fff;
+  margin-right: 10px;
+}
+
+.app-menu.ant-menu {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  border-inline-end: 0 !important;
+  padding: 10px;
+}
+
+.app-menu .ant-menu-item {
+  border-radius: 8px;
+  height: 42px;
+  line-height: 42px;
+  margin: 4px 0;
+}
+
+.app-menu .ant-menu-item-selected {
+  background: rgba(31, 138, 112, 0.22) !important;
+  color: #fff !important;
+}
+
+.app-menu .ant-menu-item:hover {
+  color: #fff !important;
+}
+
+.app-header {
+  height: 64px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.app-header-user {
+  padding-right: 24px;
+}
+
+.app-content {
+  margin: 0;
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+}
+
+.app-page {
+  max-width: 1480px;
+  margin: 0 auto;
+}
+
+.app-page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.app-page-kicker {
+  display: block;
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin-bottom: 4px;
+}
+
+.app-page-title.ant-typography {
+  color: var(--ink);
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.app-page-description {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.app-page-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.app-toolbar {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.app-toolbar-filters,
+.app-toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.app-toolbar-actions {
+  justify-content: flex-end;
+}
+
+.record-count {
+  color: var(--muted);
+  font-size: 13px;
+  margin-right: 4px;
+}
+
+.metric-card.ant-card {
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.metric-card .ant-card-body {
+  padding: 18px;
+}
+
+.metric-card-clickable {
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.metric-card-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(16, 35, 31, 0.12);
+}
+
+.metric-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.metric-card-label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.metric-card-icon {
+  color: var(--teal);
+  font-size: 18px;
+}
+
+.metric-card-value {
+  color: var(--ink);
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.metric-card-amber .metric-card-icon,
+.metric-card-amber .metric-card-value {
+  color: var(--amber);
+}
+
+.metric-card-red .metric-card-icon,
+.metric-card-red .metric-card-value {
+  color: var(--red);
+}
+
+.metric-card-forest .metric-card-icon,
+.metric-card-forest .metric-card-value {
+  color: var(--forest);
+}
+
+.app-card.ant-card {
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.app-table .ant-table {
+  border-radius: 8px;
+}
+
+.app-table .ant-table-thead > tr > th {
+  background: #f1f5ef !important;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.app-table .ant-table-tbody > tr > td {
+  vertical-align: middle;
+}
+
+.app-table .ant-table-tbody > tr:hover > td {
+  background: #f7fbf7 !important;
+}
+
+.table-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.money-text {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.money-text-strong {
+  font-weight: 800;
+}
+
+.money-text-income,
+.money-text-teal {
+  color: var(--teal);
+}
+
+.money-text-cost,
+.money-text-red {
+  color: var(--red);
+}
+
+.app-tag.ant-tag {
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.section-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.dashboard-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+  cursor: pointer;
+}
+
+.insight-label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.insight-value {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 850;
+}
+
+.salary-total-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.salary-total-pill {
+  background: #f1f5ef;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+@media (max-width: 980px) {
+  .app-content {
+    padding: 16px;
+  }
+
+  .app-page-header,
+  .app-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-toolbar-actions,
+  .app-page-extra {
+    justify-content: flex-start;
+  }
+
+  .dashboard-insight-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-content {
+    padding: 12px;
+  }
+
+  .app-header-user {
+    padding-right: 8px;
+  }
+
+  .app-header-user .ant-space-item:first-child {
+    display: none;
+  }
+
+  .metric-card-value {
+    font-size: 22px;
+  }
+}
