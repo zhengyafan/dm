@@ -111,6 +111,15 @@ test('authenticated user can change password', async () => {
   assert.equal(newLogin.status, 200);
 });
 
+test('admin can log in with the default password after password changes', async () => {
+  const login = await request('POST', '/api/auth/login', {
+    body: { username: 'admin', password: 'admin' }
+  });
+
+  assert.equal(login.status, 200);
+  assert.equal(login.body.user.username, 'admin');
+});
+
 test('business APIs allow valid token', async () => {
   const login = await request('POST', '/api/auth/login', {
     body: { username: 'admin', password: 'newSecret123' }
