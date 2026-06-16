@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+frontend/build/
+backend/database.sqlite
+backend/database.sqlite-*
+backend/uploads/
+backend/.env
+*.log
+npm-debug.log*
+*.xlsx
+*.tar.gz
