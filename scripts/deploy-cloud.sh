@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SERVER_HOST="${SERVER_HOST:-110.42.216.97}"
+SERVER_HOST="${SERVER_HOST:-mbfthb.cloud}"
+SERVER_NAMES="${SERVER_NAMES:-mbfthb.cloud www.mbfthb.cloud 110.42.216.97}"
+SERVER_ADDRESS="${SERVER_ADDRESS:-110.42.216.97}"
 SERVER_USER="${SERVER_USER:-root}"
 SSH_KEY="${SSH_KEY:-}"
 REMOTE_DIR="${REMOTE_DIR:-/var/www/DM-sys}"
@@ -52,11 +54,11 @@ tar \
   -czf "$PACKAGE" \
   -C "$WORKSPACE" .
 
-echo "Uploading package to $SERVER_HOST..."
-scp -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new "$PACKAGE" "$SERVER_USER@$SERVER_HOST:/tmp/dm-sys-production-deploy.tar.gz"
+echo "Uploading package to $SERVER_ADDRESS..."
+scp -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new "$PACKAGE" "$SERVER_USER@$SERVER_ADDRESS:/tmp/dm-sys-production-deploy.tar.gz"
 
 echo "Installing and starting application on server..."
-ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new "$SERVER_USER@$SERVER_HOST" bash -s <<REMOTE
+ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new "$SERVER_USER@$SERVER_ADDRESS" bash -s <<REMOTE
 set -euo pipefail
 
 REMOTE_DIR="$REMOTE_DIR"
@@ -64,6 +66,7 @@ APP_NAME="$APP_NAME"
 ADMIN_USERNAME="$ADMIN_USERNAME"
 ADMIN_PASSWORD="$ADMIN_PASSWORD"
 JWT_SECRET="$JWT_SECRET"
+SERVER_NAMES="$SERVER_NAMES"
 
 if command -v apt-get >/dev/null 2>&1; then
   export DEBIAN_FRONTEND=noninteractive
@@ -123,7 +126,7 @@ pm2 save
 cat > /etc/nginx/conf.d/dm-sys.conf <<NGINX
 server {
     listen 80;
-    server_name $SERVER_HOST;
+    server_name \$SERVER_NAMES;
 
     client_max_body_size 50m;
 

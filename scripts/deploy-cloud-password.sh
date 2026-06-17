@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SERVER_HOST="${SERVER_HOST:-110.42.216.97}"
+SERVER_HOST="${SERVER_HOST:-mbfthb.cloud}"
+SERVER_NAMES="${SERVER_NAMES:-mbfthb.cloud www.mbfthb.cloud 110.42.216.97}"
+SERVER_ADDRESS="${SERVER_ADDRESS:-110.42.216.97}"
 SERVER_USER="${SERVER_USER:-ubuntu}"
 SERVER_PASSWORD="${SERVER_PASSWORD:-}"
 REMOTE_DIR="${REMOTE_DIR:-/var/www/DM-sys}"
@@ -82,6 +84,7 @@ ADMIN_USERNAME="$ADMIN_USERNAME"
 ADMIN_PASSWORD="$ADMIN_PASSWORD"
 JWT_SECRET="$JWT_SECRET"
 SERVER_HOST="$SERVER_HOST"
+SERVER_NAMES="$SERVER_NAMES"
 
 if command -v apt-get >/dev/null 2>&1; then
   export DEBIAN_FRONTEND=noninteractive
@@ -141,7 +144,7 @@ pm2 save
 cat > /etc/nginx/conf.d/dm-sys.conf <<NGINX
 server {
     listen 80;
-    server_name $SERVER_HOST;
+    server_name $SERVER_NAMES;
 
     client_max_body_size 50m;
 
@@ -172,13 +175,13 @@ echo "Username: $ADMIN_USERNAME"
 REMOTE_SCRIPT_CONTENT
 
 echo "Uploading package..."
-run_expect "scp -o StrictHostKeyChecking=accept-new $PACKAGE $SERVER_USER@$SERVER_HOST:/tmp/dm-sys-production-deploy.tar.gz"
+run_expect "scp -o StrictHostKeyChecking=accept-new $PACKAGE $SERVER_USER@$SERVER_ADDRESS:/tmp/dm-sys-production-deploy.tar.gz"
 
 echo "Uploading remote deploy script..."
-run_expect "scp -o StrictHostKeyChecking=accept-new $REMOTE_SCRIPT $SERVER_USER@$SERVER_HOST:/tmp/dm-remote-deploy.sh"
+run_expect "scp -o StrictHostKeyChecking=accept-new $REMOTE_SCRIPT $SERVER_USER@$SERVER_ADDRESS:/tmp/dm-remote-deploy.sh"
 
 echo "Running remote deploy script with sudo..."
-run_expect "ssh -o StrictHostKeyChecking=accept-new $SERVER_USER@$SERVER_HOST \"printf '%s\\n' '$SERVER_PASSWORD' | sudo -S bash /tmp/dm-remote-deploy.sh\""
+run_expect "ssh -o StrictHostKeyChecking=accept-new $SERVER_USER@$SERVER_ADDRESS \"printf '%s\\n' '$SERVER_PASSWORD' | sudo -S bash /tmp/dm-remote-deploy.sh\""
 
 echo
 echo "Deployment complete."
