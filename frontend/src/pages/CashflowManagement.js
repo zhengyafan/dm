@@ -16,6 +16,7 @@ function CashflowManagement() {
   const [searchYear, setSearchYear] = useState('');
   const [searchMonth, setSearchMonth] = useState('');
   const [otherDeduction, setOtherDeduction] = useState(0);
+  const [manualProfit, setManualProfit] = useState(null);
   const [summary, setSummary] = useState({
     totalAmount: '0.00',
     actualIncome: '0.00',
@@ -26,12 +27,17 @@ function CashflowManagement() {
 
   const years = [new Date().getFullYear(), new Date().getFullYear() - 1, new Date().getFullYear() - 2];
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const realProfit = (Number(summary.actualIncome) || 0) - (Number(summary.paidSalary) || 0) - (Number(otherDeduction) || 0);
+  const defaultProfit = (Number(summary.actualIncome) || 0) - (Number(summary.paidSalary) || 0) - (Number(otherDeduction) || 0);
+  const realProfit = manualProfit === null ? defaultProfit : Number(manualProfit) || 0;
 
   useEffect(() => {
     fetchData();
     fetchSummary();
   }, [searchScriptName, searchYear, searchMonth]);
+
+  useEffect(() => {
+    setManualProfit(defaultProfit);
+  }, [summary.actualIncome, summary.paidSalary, otherDeduction]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -272,6 +278,14 @@ function CashflowManagement() {
             onChange={(value) => setOtherDeduction(value || 0)}
             addonBefore="其他扣减"
             placeholder="可输入金额"
+            style={{ width: 180 }}
+          />
+          <InputNumber
+            step={0.01}
+            value={manualProfit}
+            onChange={(value) => setManualProfit(value ?? null)}
+            addonBefore="真实利润"
+            placeholder="可手动填写"
             style={{ width: 180 }}
           />
           </>
