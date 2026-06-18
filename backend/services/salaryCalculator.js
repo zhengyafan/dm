@@ -35,6 +35,11 @@ async function calculateSalaries({ startDate, endDate, dmName, includeSettled = 
     include: [
       { model: db.Dm, attributes: ['id', 'name', 'type'] },
       { model: db.Script, attributes: ['name', 'attribute'] }
+    ],
+    order: [
+      ['session_date', 'ASC'],
+      ['session_time', 'ASC'],
+      ['id', 'ASC']
     ]
   });
 
@@ -104,13 +109,22 @@ async function calculateSalaries({ startDate, endDate, dmName, includeSettled = 
     const bloodSalary = bloodCars * 150;
 
     const totalBefore = previousLadderByDm[String(dmId)] || 0;
-    const ladderCars = normalCars + cityCars;
+    const ladderCars = normalCars + cityCars + bloodCars;
     const ladderDetails = [];
 
     if (dm.type === 'parttime') {
       baseSalary = totalCars * 150;
     } else {
-      for (let i = 0; i < ladderCars; i++) {
+      const ladderSessions = dmSessionsList.filter(s => {
+        const scriptName = s.Script?.name || '';
+        const attr = s.Script?.attribute || s.attribute;
+        return attr === 'city' || scriptName.includes('血染钟楼') || attr === 'box';
+      });
+
+      for (let i = 0; i < ladderSessions.length; i++) {
+        const currentSession = ladderSessions[i];
+        const currentScriptName = currentSession.Script?.name || '';
+        const isBloodSession = currentScriptName.includes('血染钟楼');
         const carIndex = totalBefore + i + 1;
         let carSalary = 0;
         let ladderLevel = '';
@@ -126,11 +140,15 @@ async function calculateSalaries({ startDate, endDate, dmName, includeSettled = 
           ladderLevel = '第三阶梯';
         }
 
-        baseSalary += carSalary;
+        if (!isBloodSession) {
+          baseSalary += carSalary;
+        }
         ladderDetails.push({
           car_index: carIndex,
           ladder_level: ladderLevel,
-          salary: carSalary
+          salary: isBloodSession ? 0 : carSalary,
+          script_name: currentScriptName,
+          is_blood: isBloodSession
         });
 
         if (carIndex === 5) {
