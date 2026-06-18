@@ -1,5 +1,10 @@
 const db = require('../models');
 
+function monthStart(date) {
+  const value = String(date || '');
+  return value.length >= 7 ? `${value.slice(0, 7)}-01` : date;
+}
+
 async function calculateSalaries({ startDate, endDate, dmName, includeSettled = false }) {
   const where = {
     session_date: {
@@ -54,7 +59,10 @@ async function calculateSalaries({ startDate, endDate, dmName, includeSettled = 
     ],
     where: {
       dm_id: { [db.Sequelize.Op.in]: dmIds },
-      end_date: { [db.Sequelize.Op.lt]: startDate }
+      end_date: {
+        [db.Sequelize.Op.gte]: monthStart(endDate || startDate),
+        [db.Sequelize.Op.lt]: endDate
+      }
     },
     group: ['dm_id'],
     raw: true

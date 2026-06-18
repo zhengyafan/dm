@@ -15,10 +15,18 @@ function CashflowManagement() {
   const [searchScriptName, setSearchScriptName] = useState('');
   const [searchYear, setSearchYear] = useState('');
   const [searchMonth, setSearchMonth] = useState('');
-  const [summary, setSummary] = useState({ totalAmount: '0.00', actualIncome: '0.00', count: 0 });
+  const [otherDeduction, setOtherDeduction] = useState(0);
+  const [summary, setSummary] = useState({
+    totalAmount: '0.00',
+    actualIncome: '0.00',
+    paidSalary: '0.00',
+    grossProfit: '0.00',
+    count: 0
+  });
 
   const years = [new Date().getFullYear(), new Date().getFullYear() - 1, new Date().getFullYear() - 2];
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const realProfit = (Number(summary.actualIncome) || 0) - (Number(summary.paidSalary) || 0) - (Number(otherDeduction) || 0);
 
   useEffect(() => {
     fetchData();
@@ -257,6 +265,15 @@ function CashflowManagement() {
               <Select.Option key={month} value={month}>{month}月</Select.Option>
             ))}
           </Select>
+          <InputNumber
+            min={0}
+            step={0.01}
+            value={otherDeduction}
+            onChange={(value) => setOtherDeduction(value || 0)}
+            addonBefore="其他扣减"
+            placeholder="可输入金额"
+            style={{ width: 180 }}
+          />
           </>
         )}
         meta={<RecordCount count={data.length} selected={selectedRows.length} />}
@@ -283,14 +300,17 @@ function CashflowManagement() {
       />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} md={8}>
+        <Col xs={24} md={6}>
           <MetricCard label="总收款金额" value={<MoneyText value={summary.totalAmount} strong />} tone="forest" />
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={24} md={6}>
           <MetricCard label="实际收入金额" value={<MoneyText value={summary.actualIncome} strong tone="income" />} tone="teal" />
         </Col>
-        <Col xs={24} md={8}>
-          <MetricCard label="记录数量" value={summary.count || 0} suffix=" 条" tone="amber" />
+        <Col xs={24} md={6}>
+          <MetricCard label="DM已发工资" value={<MoneyText value={summary.paidSalary} strong tone="cost" />} tone="red" />
+        </Col>
+        <Col xs={24} md={6}>
+          <MetricCard label="真实利润" value={<MoneyText value={realProfit} strong tone={realProfit >= 0 ? 'income' : 'cost'} />} tone={realProfit >= 0 ? 'forest' : 'red'} />
         </Col>
       </Row>
 

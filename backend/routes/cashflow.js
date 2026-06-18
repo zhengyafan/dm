@@ -14,6 +14,19 @@ function createdAtRange(startDate, endDate) {
   };
 }
 
+function dateBoundsFromQuery({ startDate, endDate, year, month }) {
+  if (year && month) {
+    return {
+      startDate: `${year}-${String(month).padStart(2, '0')}-01`,
+      endDate: new Date(parseInt(year, 10), parseInt(month, 10), 0).toISOString().split('T')[0]
+    };
+  }
+  if (startDate && endDate) {
+    return { startDate, endDate };
+  }
+  return {};
+}
+
 function monthDateRange(year, month) {
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
   const endDate = new Date(parseInt(year, 10), parseInt(month, 10), 0).toISOString().split('T')[0];
@@ -49,6 +62,8 @@ router.get('/summary', async (req, res) => {
       query.script_name = { [Op.like]: `%${scriptName}%` };
     }
     
+    const bounds = dateBoundsFromQuery({ startDate, endDate, year, month });
+
     if (year && month) {
       query.createdAt = monthDateRange(year, month);
     } else if (startDate && endDate) {
@@ -64,10 +79,29 @@ router.get('/summary', async (req, res) => {
       where: query,
       raw: true
     });
+
+    const salaryWhere = {};
+    if (bounds.startDate && bounds.endDate) {
+      salaryWhere.start_date = { [Op.lte]: bounds.endDate };
+      salaryWhere.end_date = { [Op.gte]: bounds.startDate };
+    }
+
+    const salarySummary = await db.SalarySettlement.findOne({
+      attributes: [
+        [fn('COALESCE', fn('SUM', col('total_salary')), 0), 'paidSalary']
+      ],
+      where: salaryWhere,
+      raw: true
+    });
+
+    const paidSalary = parseFloat(salarySummary?.paidSalary) || 0;
+    const actualIncome = parseFloat(summary.actualIncome) || 0;
     
     res.json({ 
       totalAmount: (parseFloat(summary.totalAmount) || 0).toFixed(2),
-      actualIncome: (parseFloat(summary.actualIncome) || 0).toFixed(2),
+      actualIncome: actualIncome.toFixed(2),
+      paidSalary: paidSalary.toFixed(2),
+      grossProfit: (actualIncome - paidSalary).toFixed(2),
       count: parseInt(summary.count, 10) || 0
     });
   } catch (err) {
