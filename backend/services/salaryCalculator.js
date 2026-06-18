@@ -60,7 +60,7 @@ async function calculateSalaries({ startDate, endDate, dmName, includeSettled = 
   const previousLadderRows = dmIds.length ? await db.SalarySettlement.findAll({
     attributes: [
       'dm_id',
-      [db.Sequelize.fn('COALESCE', db.Sequelize.fn('SUM', db.Sequelize.col('ladder_cars')), 0), 'total_ladder_cars']
+      [db.Sequelize.fn('COALESCE', db.Sequelize.fn('SUM', db.Sequelize.col('total_cars')), 0), 'total_settled_cars']
     ],
     where: {
       dm_id: { [db.Sequelize.Op.in]: dmIds },
@@ -73,7 +73,7 @@ async function calculateSalaries({ startDate, endDate, dmName, includeSettled = 
     raw: true
   }) : [];
   const previousLadderByDm = previousLadderRows.reduce((acc, row) => {
-    acc[String(row.dm_id)] = parseInt(row.total_ladder_cars, 10) || 0;
+    acc[String(row.dm_id)] = parseInt(row.total_settled_cars, 10) || 0;
     return acc;
   }, {});
 

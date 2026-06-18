@@ -144,3 +144,42 @@ test('blood sessions count toward ladder car indexes', async () => {
   assert.deepEqual(results[0].ladder_details.map(item => item.car_index), [5]);
   assert.equal(results[0].total_salary, 270);
 });
+
+test('historical settled cars use total cars when older settlements excluded blood from ladder cars', async () => {
+  const dm = await db.Dm.create({ name: '拾贰', phone: '10000000000', type: 'fulltime' });
+  const normalScript = await db.Script.create({ name: '普通剧本', attribute: 'box' });
+
+  await db.SalarySettlement.create({
+    dm_id: dm.id,
+    start_date: '2026-06-10',
+    end_date: '2026-06-18',
+    total_cars: 4,
+    ladder_cars: 3,
+    base_salary: 390,
+    bonus_salary: 0,
+    city_extra: 0,
+    blood_salary: 150,
+    props_total: 0,
+    milestone_reward: 0,
+    total_salary: 540
+  });
+
+  await db.Session.create({
+    script_id: normalScript.id,
+    dm_id: dm.id,
+    session_date: '2026-06-19',
+    session_time: '12:00',
+    attribute: 'box',
+    is_settled: false
+  });
+
+  const results = await calculateSalaries({
+    startDate: '2026-06-01',
+    endDate: '2026-06-30',
+    dmName: '拾贰'
+  });
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].total_before, 4);
+  assert.deepEqual(results[0].ladder_details.map(item => item.car_index), [5]);
+});
